@@ -107,11 +107,33 @@ function VMXLibrary.new(title, clientName)
     end
 
     local function exitClient()
-        local fadeOut = TweenService:Create(ScreenGui, TweenInfo.new(0.5), {
-            Transparency = 1
+        -- Fade out MainFrame instead of ScreenGui
+        local fadeOut = TweenService:Create(MainFrame, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {
+            BackgroundTransparency = 1
         })
+        
+        -- Fade out all child elements
+        local headerFade = TweenService:Create(HeaderBar, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {
+            BackgroundTransparency = 1
+        })
+        
+        local textFade = TweenService:Create(ConsoleBox, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {
+            TextTransparency = 1
+        })
+        
+        local buttonFade = TweenService:Create(LoadButton, TweenInfo.new(0.5, Enum.EasingStyle.Quad), {
+            BackgroundTransparency = 1,
+            TextTransparency = 1
+        })
+
+        -- Play all fade animations
         fadeOut:Play()
-        fadeOut.Completed:Wait()
+        headerFade:Play()
+        textFade:Play()
+        buttonFade:Play()
+
+        -- Wait for animations to complete then destroy
+        task.wait(0.5)
         ScreenGui:Destroy()
     end
 
@@ -126,8 +148,9 @@ function VMXLibrary.new(title, clientName)
             end
         end)
 
+        -- Fix the messages reference
         task.spawn(function()
-            task.wait(#messages * 0.5 + 1)
+            task.wait(3) -- Fixed timing
             isExiting = false
         end)
         
