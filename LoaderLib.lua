@@ -1,5 +1,7 @@
 local VMXLibrary = {}
 
+local TweenService = game:GetService("TweenService")
+
 function VMXLibrary.new(title, clientName)
     local lib = {}
     lib.config = {
@@ -9,7 +11,6 @@ function VMXLibrary.new(title, clientName)
         messages = {}
     }
 
-    -- Create all UI elements
     local ScreenGui = Instance.new("ScreenGui")
     local MainFrame = Instance.new("Frame")
     local HeaderBar = Instance.new("Frame")
@@ -18,21 +19,18 @@ function VMXLibrary.new(title, clientName)
     local LoadButton = Instance.new("TextButton")
     local UICorner = Instance.new("UICorner")
 
-    -- ScreenGui Setup
     ScreenGui.Name = "VMXLoader"
     ScreenGui.Parent = game:GetService("CoreGui")
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ScreenGui.ResetOnSpawn = false
 
-    -- Main Frame Setup (increased size)
     MainFrame.Name = "MainFrame"
     MainFrame.Parent = ScreenGui
     MainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
     MainFrame.BackgroundTransparency = 0.3
-    MainFrame.Position = UDim2.new(0.5, -250, 0.5, -175) -- Adjusted position
-    MainFrame.Size = UDim2.new(0, 500, 0, 350) -- Increased size
+    MainFrame.Position = UDim2.new(0.5, -250, 0.5, -175)
+    MainFrame.Size = UDim2.new(0, 500, 0, 350)
 
-    -- Header Setup
     HeaderBar.Name = "HeaderBar"
     HeaderBar.Parent = MainFrame
     HeaderBar.BackgroundColor3 = Color3.fromRGB(10, 10, 12)
@@ -42,12 +40,11 @@ function VMXLibrary.new(title, clientName)
     HeaderText.Parent = HeaderBar
     HeaderText.BackgroundTransparency = 1
     HeaderText.Size = UDim2.new(1, 0, 1, 0)
-    HeaderText.Font = Enum.Font.Code -- Changed from Gotham
+    HeaderText.Font = Enum.Font.Code
     HeaderText.Text = lib.config.title
     HeaderText.TextColor3 = Color3.fromRGB(255, 255, 255)
-    HeaderText.TextSize = 14 -- Reduced size for less emphasis
+    HeaderText.TextSize = 14
 
-    -- Console Setup
     ConsoleBox.Name = "ConsoleBox"
     ConsoleBox.Parent = MainFrame
     ConsoleBox.BackgroundTransparency = 1
@@ -59,16 +56,15 @@ function VMXLibrary.new(title, clientName)
     ConsoleBox.TextXAlignment = Enum.TextXAlignment.Left
     ConsoleBox.TextYAlignment = Enum.TextYAlignment.Top
     ConsoleBox.RichText = true
-    ConsoleBox.TextTransparency = 0 -- Ensure full opacity
+    ConsoleBox.TextTransparency = 0
     ConsoleBox.Text = ""
 
-    -- Load Button Setup (full width with margins)
     LoadButton.Name = "LoadButton"
     LoadButton.Parent = MainFrame
     LoadButton.BackgroundColor3 = Color3.fromRGB(51, 51, 51)
     LoadButton.Position = UDim2.new(0, 20, 1, -35)
     LoadButton.Size = UDim2.new(1, -40, 0, 25)
-    LoadButton.Font = Enum.Font.Code -- Changed from Gotham
+    LoadButton.Font = Enum.Font.Code
     LoadButton.Text = "Exit Client"
     LoadButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     LoadButton.TextSize = 14
@@ -77,7 +73,6 @@ function VMXLibrary.new(title, clientName)
     UICorner.CornerRadius = UDim.new(0, 4)
     UICorner.Parent = LoadButton
 
-    -- Library Methods
     function lib:setTitle(text)
         self.config.title = text
         HeaderText.Text = text
@@ -111,21 +106,40 @@ function VMXLibrary.new(title, clientName)
         return self
     end
 
+    local function exitClient()
+        local fadeOut = TweenService:Create(ScreenGui, TweenInfo.new(0.5), {
+            Transparency = 1
+        })
+        fadeOut:Play()
+        fadeOut.Completed:Wait()
+        ScreenGui:Destroy()
+    end
+
     function lib:onLoad(callback)
+        local isExiting = true
+        
         LoadButton.MouseButton1Click:Connect(function()
-            LoadButton.Text = "Load Client"
-            LoadButton.TextColor3 = Color3.fromRGB(0, 255, 0)
-            if callback then callback() end
+            if isExiting then
+                exitClient()
+            else
+                if callback then callback() end
+            end
         end)
+
+        task.spawn(function()
+            task.wait(#messages * 0.5 + 1)
+            isExiting = false
+        end)
+        
         return self
     end
 
     function lib:setProduct(name, type, nameColor, typeColor)
         local formattedProduct = string.format(
             '<font color="rgb(%s)">%s</font>, <font color="rgb(%s)">%s</font>',
-            nameColor or "255,255,255", -- default white
+            nameColor or "255,255,255",
             name,
-            typeColor or "255,0,0", -- default red
+            typeColor or "255,0,0",
             type
         )
         self:setGameId(formattedProduct)
@@ -142,19 +156,31 @@ function VMXLibrary.new(title, clientName)
             "[" .. self.config.clientName .. "] {INFO} Product " .. self.config.gameId
         }
         
-        -- Animate messages
         ConsoleBox.Text = ""
         task.spawn(function()
             for _, msg in ipairs(messages) do
-                if ConsoleBox.Parent then -- Check if UI still exists
+                if ConsoleBox.Parent then
                     ConsoleBox.Text = ConsoleBox.Text .. msg .. "\n"
-                    task.wait(0.3) -- Delay between messages
+                    task.wait(0.5)
                 end
+            end
+
+            if LoadButton then
+                local buttonTween = TweenService:Create(LoadButton, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+                })
+                local textTween = TweenService:Create(LoadButton, TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+                    TextColor3 = Color3.fromRGB(255, 255, 255)
+                })
+                
+                task.wait(0.3)
+                LoadButton.Text = "Load Client"
+                buttonTween:Play()
+                textTween:Play()
             end
         end)
     end
 
-    -- Initialize
     lib:updateConsole()
     return lib
 end
