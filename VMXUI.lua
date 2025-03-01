@@ -109,6 +109,14 @@ function VMXUILib.new(title)
         Parent = MainFrame
     })
     
+    -- Add title to header
+    local HeaderTitle = createLabel(title, {
+        Size = UDim2.new(1, -10, 1, 0),
+        Position = UDim2.new(0, 5, 0, 0),
+        TextXAlignment = Enum.TextXAlignment.Left,
+        Parent = HeaderFrame
+    })
+    
     -- Create content frame
     local ContentFrame = createRoundedFrame({
         Name = "Content",
@@ -119,11 +127,12 @@ function VMXUILib.new(title)
     })
 
     -- Add element functions
-    function window:AddToggle(name, defaultState, callback)
+    function window:AddToggle(name, defaultState, callback, parent)
         local toggleFrame = createRoundedFrame({
             Size = UDim2.new(1, 0, 0, 30),
             BackgroundTransparency = 1,
-            Parent = ContentFrame
+            Position = UDim2.new(0, 0, 0, #parent:GetChildren() * 35),
+            Parent = parent or ContentFrame
         })
         
         local toggleButton = createRoundedFrame({
@@ -162,11 +171,12 @@ function VMXUILib.new(title)
         }
     end
 
-    function window:AddSlider(name, min, max, default, callback)
+    function window:AddSlider(name, min, max, default, callback, parent)
         local sliderFrame = createRoundedFrame({
             Size = UDim2.new(1, 0, 0, 45),
             BackgroundTransparency = 1,
-            Parent = ContentFrame
+            Position = UDim2.new(0, 0, 0, #parent:GetChildren() * 35),
+            Parent = parent or ContentFrame
         })
         
         local label = createLabel(name, {
@@ -225,7 +235,7 @@ function VMXUILib.new(title)
         }
     end
 
-    function window:AddColorPicker(name, defaultColor, callback)
+    function window:AddColorPicker(name, defaultColor, callback, parent)
         local pickerOpen = false
         local recentColors = {}
         
@@ -233,7 +243,8 @@ function VMXUILib.new(title)
         local colorFrame = createRoundedFrame({
             Size = UDim2.new(1, 0, 0, 30),
             BackgroundTransparency = 1,
-            Parent = ContentFrame
+            Position = UDim2.new(0, 0, 0, #parent:GetChildren() * 35),
+            Parent = parent or ContentFrame
         })
         
         local colorButton = createRoundedFrame({
@@ -410,11 +421,12 @@ function VMXUILib.new(title)
         }
     end
 
-    function window:AddKeybind(name, defaultKey, callback)
+    function window:AddKeybind(name, defaultKey, callback, parent)
         local keybindFrame = createRoundedFrame({
             Size = UDim2.new(1, 0, 0, 30),
             BackgroundTransparency = 1,
-            Parent = ContentFrame
+            Position = UDim2.new(0, 0, 0, #parent:GetChildren() * 35),
+            Parent = parent or ContentFrame
         })
     
         local label = createLabel(name, {
@@ -471,11 +483,12 @@ function VMXUILib.new(title)
         }
     end
     
-    function window:AddDropdown(name, options, multiSelect, callback)
+    function window:AddDropdown(name, options, multiSelect, callback, parent)
         local dropdownFrame = createRoundedFrame({
             Size = UDim2.new(1, 0, 0, 30),
             BackgroundTransparency = 1,
-            Parent = ContentFrame
+            Position = UDim2.new(0, 0, 0, #parent:GetChildren() * 35),
+            Parent = parent or ContentFrame
         })
     
         local label = createLabel(name, {
@@ -621,6 +634,44 @@ function VMXUILib.new(title)
 
     ScreenGui.Parent = game:GetService("CoreGui")
     MainFrame.Visible = false
+
+    -- Fix tab system
+    function window:CreateTab(name)
+        local tabFrame = createRoundedFrame({
+            Size = UDim2.new(1, 0, 1, 0),
+            BackgroundTransparency = 1,
+            Parent = ContentFrame
+        })
+
+        local tab = {
+            Frame = tabFrame,
+            AddToggle = function(self, name, default, callback)
+                return window:AddToggle(name, default, callback, tabFrame)
+            end,
+            AddSlider = function(self, name, min, max, default, callback)
+                return window:AddSlider(name, min, max, default, callback, tabFrame)
+            end,
+            AddDropdown = function(self, name, options, multiSelect, callback)
+                return window:AddDropdown(name, options, multiSelect, callback, tabFrame)
+            end,
+            AddColorPicker = function(self, name, default, callback)
+                return window:AddColorPicker(name, default, callback, tabFrame)
+            end,
+            AddKeybind = function(self, name, default, callback)
+                return window:AddKeybind(name, default, callback, tabFrame)
+            end,
+            AddLabel = function(self, text)
+                local label = createLabel(text, {
+                    Size = UDim2.new(1, -10, 0, 25),
+                    Position = UDim2.new(0, 5, 0, #tabFrame:GetChildren() * 35),
+                    Parent = tabFrame
+                })
+                return label
+            end
+        }
+
+        return tab
+    end
 
     return window
 end
