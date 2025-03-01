@@ -120,6 +120,18 @@ function VMXLibrary.new(title, clientName)
         return self
     end
 
+    function lib:setProduct(name, type, nameColor, typeColor)
+        local formattedProduct = string.format(
+            '<font color="rgb(%s)">%s</font>, <font color="rgb(%s)">%s</font>',
+            nameColor or "255,255,255", -- default white
+            name,
+            typeColor or "255,0,0", -- default red
+            type
+        )
+        self:setGameId(formattedProduct)
+        return self
+    end
+
     function lib:updateConsole()
         local messages = {
             "[" .. self.config.clientName .. "] Preparing to load client",
