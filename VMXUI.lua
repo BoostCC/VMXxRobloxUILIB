@@ -8,6 +8,16 @@ local HEADER_COLOR = Color3.fromRGB(9, 9, 11)
 local BODY_COLOR = Color3.fromRGB(0, 0, 0)
 local TOGGLE_COLOR = Color3.fromRGB(51, 51, 53)
 
+-- Add asset IDs at the top
+local ASSETS = {
+    BORDER_EFFECT = "rbxassetid://97259191643686",
+    CLOCK_ICON = "rbxassetid://132175659283716",
+    KEY_ICON = "rbxassetid://130149033720748",
+    MEMBERSHIP_ICON = "rbxassetid://72871307464995",
+    CHECKMARK_ICON = "rbxassetid://113327020833903",
+    DROPDOWN_ICON = "rbxassetid://98930286736725"
+}
+
 -- Utility Functions
 local function createRoundedFrame(props)
     local frame = Instance.new("Frame")
@@ -100,6 +110,63 @@ function VMXUILib.new(title)
         Position = UDim2.new(0.5, -150, 0.5, -200),
         Parent = ScreenGui
     })
+
+    -- Add border effect
+    local BorderEffect = Instance.new("ImageLabel")
+    BorderEffect.Image = ASSETS.BORDER_EFFECT
+    BorderEffect.BackgroundTransparency = 1
+    BorderEffect.Size = UDim2.new(0, 1471, 0, 127)
+    BorderEffect.Position = UDim2.new(-0.014, 0, 0.887, 0)
+    BorderEffect.Parent = ScreenGui
+    BorderEffect.ImageTransparency = 0.7
+
+    -- Add user info section
+    local UserThumbnail = Instance.new("ImageLabel")
+    UserThumbnail.Size = UDim2.new(0, 30, 0, 30)
+    UserThumbnail.Position = UDim2.new(0.021, 0, 0.949, 0)
+    UserThumbnail.Parent = ScreenGui
+    -- Set thumbnail to player's avatar
+    UserThumbnail.Image = Players:GetUserThumbnailAsync(
+        Players.LocalPlayer.UserId,
+        Enum.ThumbnailType.HeadShot,
+        Enum.ThumbnailSize.Size420x420
+    )
+
+    -- Add watermark labels
+    local Watermark = createLabel("VMX ROBLOX | FPS: 0", {
+        Position = UDim2.new(0.006, 0, 0.012, 0),
+        Size = UDim2.new(0, 153, 0, 27),
+        TextStrokeTransparency = 0.4,
+        Parent = ScreenGui
+    })
+
+    -- Add system time display
+    local ClockIcon = Instance.new("ImageLabel")
+    ClockIcon.Image = ASSETS.CLOCK_ICON
+    ClockIcon.BackgroundTransparency = 1
+    ClockIcon.Size = UDim2.new(0, 28, 0, 29)
+    ClockIcon.Position = UDim2.new(0.168, 0, 0.950, 0)
+    ClockIcon.Parent = ScreenGui
+
+    local SystemTimeLabel = createLabel("System Time", {
+        Position = UDim2.new(0.191, 0, 0.950, 0),
+        Size = UDim2.new(0, 87, 0, 16),
+        Parent = ScreenGui
+    })
+
+    local TimeLabel = createLabel(os.date("%I:%M %p"), {
+        Position = UDim2.new(0.191, 0, 0.973, 0),
+        Size = UDim2.new(0, 56, 0, 11),
+        TextColor3 = Color3.fromRGB(255, 0, 4),
+        Parent = ScreenGui
+    })
+
+    -- Update UI elements
+    game:GetService("RunService").RenderStepped:Connect(function()
+        local fps = math.floor(1/game:GetService("RunService").RenderStepped:Wait())
+        Watermark.Text = string.format("VMX ROBLOX | FPS: %d", fps)
+        TimeLabel.Text = os.date("%I:%M %p")
+    end)
 
     -- Create header
     local HeaderFrame = createRoundedFrame({
@@ -512,10 +579,10 @@ function VMXUILib.new(title)
         })
     
         local arrow = Instance.new("ImageLabel")
-        arrow.Image = "rbxassetid://98930286736725" -- Your dropdown arrow asset
+        arrow.Image = ASSETS.DROPDOWN_ICON
         arrow.BackgroundTransparency = 1
-        arrow.Size = UDim2.new(0, 20, 0, 20)
-        arrow.Position = UDim2.new(1, -25, 0.5, -10)
+        arrow.Size = UDim2.new(0, 21, 0, 16)
+        arrow.Position = UDim2.new(0.492, 0, 0.498, 0)
         arrow.Parent = dropdownButton
     
         local optionsFrame = createRoundedFrame({
